@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.pytest_cache/
+.idea/
+.vscode/
+*.egg-info/
+
+# runtime data
+data/uploads/*
+data/frames/*
+!data/uploads/.gitkeep
+!data/frames/.gitkeep
+
+# models / large files
+*.h5
+*.keras
+*.pt
+*.pth
+*.mp4
+*.avi
+*.mov
