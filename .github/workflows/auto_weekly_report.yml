@@ -2,9 +2,11 @@
 name: Weekly Progress Report Auto-Commit
 
 on:
+  # Automatically run every Saturday at 11:59 PM IST
   schedule:
-    # Every Thursday at 18:29 UTC (11:59 PM IST)
-    - cron: '29 18 * * 4'
+    - cron: '29 18 * * 6'
+
+  # Allow manual execution anytime
   workflow_dispatch:
 
 permissions:
@@ -33,13 +35,15 @@ jobs:
       - name: Generate weekly report
         run: python generate_report.py
 
-      - name: Commit and push generated reports
+      - name: Commit and push generated report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add weekly_reports/
+
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update weekly progress report"
+            git commit -m "chore: generate weekly progress report"
             git push origin HEAD:main
           else
             echo "No report changes to commit."
