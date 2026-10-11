@@ -21,6 +21,7 @@ class AnalysisResult(BaseModel):
     frames_analyzed: int
     video: VideoInfoOut
     model: str
+    processing_sec: float | None = None  # measure NFR-001 (< 60 s)
 
 
 class UploadResponse(BaseModel):

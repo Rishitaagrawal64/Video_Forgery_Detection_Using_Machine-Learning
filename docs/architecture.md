@@ -30,7 +30,7 @@
 - **Uniform sampling** (default 16 frames) covers the whole clip, which suits video-level classification;
   fps-based sampling is available for temporal models.
 - **Video-level score** = mean of per-frame forged probabilities; threshold 0.5.
-- **Safety:** extension allow-list, streamed size limit (default 200 MB), corrupt files mark the job `failed`.
+- **Safety:** extension allow-list, streamed size limit (default 50 MB), corrupt files mark the job `failed`.
 
 ## Known limits / next steps (from 19/10/26)
 

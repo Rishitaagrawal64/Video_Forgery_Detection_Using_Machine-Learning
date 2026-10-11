@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import time
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile, status
@@ -30,6 +31,7 @@ def _process(video_id: str, num_frames: int, detect_faces: bool) -> None:
     if job is None:
         return
     job_store.update(video_id, status="processing")
+    started = time.perf_counter()
     try:
         predictor = get_predictor()
         res = run_pipeline(job["path"], predictor, num_frames=num_frames, detect_faces=detect_faces)
@@ -44,12 +46,17 @@ def _process(video_id: str, num_frames: int, detect_faces: bool) -> None:
                 frame_count=v.frame_count, duration_sec=v.duration_sec,
             ),
             model=predictor.name,
+            processing_sec=round(time.perf_counter() - started, 3),
         )
         job_store.update(video_id, status="completed", result=result)
     except VideoError as exc:
         job_store.update(video_id, status="failed", error=str(exc))
     except Exception as exc:  # noqa: BLE001 - surface any failure to the job record
         job_store.update(video_id, status="failed", error=f"Internal error: {exc}")
+    finally:
+        if settings.delete_after_processing:  # NFR-005
+            Path(job["path"]).unlink(missing_ok=True)
+            shutil.rmtree(settings.frames_dir / Path(job["path"]).stem, ignore_errors=True)
 
 
 @router.post("/videos", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
@@ -62,14 +69,16 @@ def upload_video(file: UploadFile = File(...)) -> UploadResponse:
     dest = settings.upload_dir / f"{video_id}{ext}"
     max_bytes = settings.max_upload_mb * 1024 * 1024
     written = 0
-    with dest.open("wb") as out:
-        while chunk := file.file.read(1024 * 1024):
-            written += len(chunk)
-            if written > max_bytes:
-                out.close()
-                dest.unlink(missing_ok=True)
-                raise HTTPException(413, f"File exceeds {settings.max_upload_mb} MB limit")
-            out.write(chunk)
+    try:
+        with dest.open("wb") as out:
+            while chunk := file.file.read(1024 * 1024):
+                written += len(chunk)
+                if written > max_bytes:
+                    raise HTTPException(413, f"File exceeds {settings.max_upload_mb} MB limit")
+                out.write(chunk)
+    except BaseException:
+        dest.unlink(missing_ok=True)  # never leave partial uploads behind
+        raise
 
     job_store.create(video_id, file.filename or dest.name, str(dest))
     return UploadResponse(video_id=video_id, filename=file.filename or dest.name, status="uploaded")
@@ -82,6 +91,8 @@ def analyze_video(video_id: str, background: BackgroundTasks, body: AnalyzeReque
         raise HTTPException(404, "Video not found")
     if job["status"] == "processing":
         raise HTTPException(409, "Video is already being processed")
+    if not Path(job["path"]).exists():
+        raise HTTPException(410, "Video file was already deleted after processing; upload it again")
     body = body or AnalyzeRequest()
     job_store.update(video_id, status="processing", result=None, error=None)
     background.add_task(_process, video_id, body.num_frames, body.detect_faces)
@@ -108,4 +119,4 @@ def delete_video(video_id: str) -> None:
         raise HTTPException(404, "Video not found")
     Path(job["path"]).unlink(missing_ok=True)
     shutil.rmtree(settings.frames_dir / Path(job["path"]).stem, ignore_errors=True)
-    job_store._jobs.pop(video_id, None)  # noqa: SLF001 - replaced by DB delete later
+    job_store.delete(video_id)

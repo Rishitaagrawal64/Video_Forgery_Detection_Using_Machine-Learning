@@ -70,3 +70,28 @@ def _upload_bytes(path) -> str:
 @pytest.mark.parametrize("path", ["/api/v1/jobs/unknown"])
 def test_unknown_job_404(path):
     assert client.get(path).status_code == 404
+
+
+def test_upload_over_limit_rejected_and_cleaned(monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "max_upload_mb", 1)
+    r = client.post("/api/v1/videos", files={"file": ("big.mp4", b"0" * (2 * 1024 * 1024), "video/mp4")})
+    assert r.status_code == 413
+    assert list(settings.upload_dir.iterdir()) == []
+
+
+def test_file_deleted_after_processing(sample_video):
+    from app.core.config import settings
+
+    vid = _upload(sample_video)
+    client.post(f"/api/v1/videos/{vid}/analyze", json={"num_frames": 4})
+    for _ in range(50):
+        job = client.get(f"/api/v1/jobs/{vid}").json()
+        if job["status"] in ("completed", "failed"):
+            break
+        time.sleep(0.1)
+    assert job["status"] == "completed"
+    assert job["result"]["processing_sec"] is not None
+    assert list(settings.upload_dir.iterdir()) == []  # NFR-005
+    assert client.post(f"/api/v1/videos/{vid}/analyze").status_code == 410

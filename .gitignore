@@ -1,3 +1,4 @@
+```ignore
 __pycache__/
 *.py[cod]
 .venv/
@@ -22,3 +23,8 @@ data/frames/*
 *.mp4
 *.avi
 *.mov
+*.zip
+data/uploads/*
+data/frames/*
+!data/**/.gitkeep: are this not in file 
+```

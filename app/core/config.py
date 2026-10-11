@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     frames_dir: Path = BASE_DIR / "data" / "frames"
 
-    max_upload_mb: int = 200
+    max_upload_mb: int = 50  # Functional Requirements, Constraint 2
+    delete_after_processing: bool = True  # NFR-005: privacy
     allowed_extensions: tuple[str, ...] = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 
     # Frame extraction / preprocessing defaults

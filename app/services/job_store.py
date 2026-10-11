@@ -43,6 +43,10 @@ class JobStore:
         with self._lock:
             return [dict(j) for j in self._jobs.values()]
 
+    def delete(self, video_id: str) -> bool:
+        with self._lock:
+            return self._jobs.pop(video_id, None) is not None
+
     @staticmethod
     def new_id() -> str:
         return uuid.uuid4().hex

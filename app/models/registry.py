@@ -25,6 +25,35 @@ class KerasPredictor(BasePredictor):
         return self.model.predict(batch, verbose=0).reshape(len(batch))
 
 
+class TorchPredictor(BasePredictor):
+    """Adapter for a TorchScript model (`torch.jit.save`). Requires `pip install torch`.
+
+    Receives channels-last numpy batches and feeds (N, 3, H, W); model must output (N,) or (N, 1)
+    logits (sigmoid is applied here) -- change if your model already outputs probabilities.
+    """
+
+    name = "torch-cnn"
+
+    def __init__(self, model_path: str):
+        import torch
+
+        self._torch = torch
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = torch.jit.load(model_path, map_location=self.device).eval()
+
+    def predict_frames(self, batch):
+        torch = self._torch
+        x = torch.from_numpy(batch).permute(0, 3, 1, 2).contiguous().to(self.device)
+        with torch.inference_mode():
+            return torch.sigmoid(self.model(x).reshape(len(batch))).cpu().numpy()
+
+
+def _build_torch() -> BasePredictor:
+    if not settings.model_path:
+        raise RuntimeError("Set FORGERY_MODEL_PATH to use the torch predictor")
+    return TorchPredictor(settings.model_path)
+
+
 def _build_keras() -> BasePredictor:
     if not settings.model_path:
         raise RuntimeError("Set FORGERY_MODEL_PATH to use the keras predictor")
@@ -34,6 +63,7 @@ def _build_keras() -> BasePredictor:
 _FACTORIES = {
     "heuristic": HeuristicPredictor,
     "keras": _build_keras,
+    "torch": _build_torch,
 }
 
 

@@ -17,6 +17,7 @@ Interactive docs: `GET /docs` (Swagger) · `GET /openapi.json`
 |---|---|
 | 404 | Unknown `video_id` |
 | 409 | Analyze requested while already processing |
+| 410 | Analyze requested after the file was auto-deleted (re-upload) |
 | 413 | Upload larger than `FORGERY_MAX_UPLOAD_MB` |
 | 415 | Extension not in `.mp4 .avi .mov .mkv .webm` |
 | 422 | Request validation error |
@@ -35,7 +36,8 @@ Interactive docs: `GET /docs` (Swagger) · `GET /openapi.json`
     "frame_scores": [0.28, 0.35, "..."],
     "frames_analyzed": 16,
     "video": {"width": 1280, "height": 720, "fps": 30.0, "frame_count": 300, "duration_sec": 10.0},
-    "model": "heuristic-placeholder"
+    "model": "heuristic-placeholder",
+    "processing_sec": 0.42
   },
   "error": null
 }
