@@ -1,0 +1,33 @@
+# Starts the API + PostgreSQL:   docker compose up --build
+# Database password comes from a .env file next to this file:  POSTGRES_PASSWORD=choose_a_password
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: forgery
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: forgery
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # keeps your data when containers restart
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgery -d forgery"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      FORGERY_DATABASE_URL: postgresql+psycopg://forgery:${POSTGRES_PASSWORD}@db:5432/forgery
+      FORGERY_PREDICTOR: ${FORGERY_PREDICTOR:-heuristic}
+      FORGERY_MAX_UPLOAD_MB: "50"
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:

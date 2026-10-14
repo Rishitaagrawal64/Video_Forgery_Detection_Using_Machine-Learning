@@ -4,7 +4,7 @@ import shutil
 import time
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile, status
 
 from app.core.config import settings
 from app.core.exceptions import VideoError
@@ -108,8 +108,9 @@ def get_job(video_id: str) -> JobResponse:
 
 
 @router.get("/jobs", response_model=list[JobResponse])
-def list_jobs() -> list[JobResponse]:
-    return [_to_job_response(j) for j in job_store.list()]
+def list_jobs(limit: int = Query(20, ge=1, le=200), offset: int = Query(0, ge=0)) -> list[JobResponse]:
+    """History, newest first (FR-005)."""
+    return [_to_job_response(j) for j in job_store.list(limit=limit, offset=offset)]
 
 
 @router.delete("/videos/{video_id}", status_code=status.HTTP_204_NO_CONTENT)

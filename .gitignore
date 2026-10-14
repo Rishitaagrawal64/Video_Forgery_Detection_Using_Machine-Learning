@@ -27,4 +27,4 @@ data/frames/*
 data/uploads/*
 data/frames/*
 !data/**/.gitkeep: are this not in file 
-```
+```.env.docker

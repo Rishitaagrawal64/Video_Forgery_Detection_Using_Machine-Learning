@@ -39,9 +39,11 @@ class JobStore:
             if video_id in self._jobs:
                 self._jobs[video_id].update(fields)
 
-    def list(self) -> list[dict[str, Any]]:
+    def list(self, limit: int | None = None, offset: int = 0) -> list[dict[str, Any]]:
         with self._lock:
-            return [dict(j) for j in self._jobs.values()]
+            rows = sorted(self._jobs.values(), key=lambda j: j["created_at"], reverse=True)
+            rows = rows[offset:] if limit is None else rows[offset : offset + limit]
+            return [dict(j) for j in rows]
 
     def delete(self, video_id: str) -> bool:
         with self._lock:
@@ -52,4 +54,15 @@ class JobStore:
         return uuid.uuid4().hex
 
 
-job_store = JobStore()
+def _build_store():
+    """PostgreSQL/SQLite when FORGERY_DATABASE_URL is set, otherwise the in-memory store."""
+    from app.core.config import settings
+
+    if settings.database_url:
+        from app.services.db_job_store import SqlJobStore
+
+        return SqlJobStore(settings.database_url)
+    return JobStore()
+
+
+job_store = _build_store()

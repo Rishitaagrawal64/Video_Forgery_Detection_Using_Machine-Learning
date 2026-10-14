@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     predictor: str = "heuristic"
     model_path: str | None = None
 
+    # e.g. postgresql+psycopg://user:pass@db:5432/forgery  (empty -> in-memory store, jobs lost on restart)
+    database_url: str | None = None
+
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     model_config = SettingsConfigDict(env_prefix="FORGERY_", env_file=".env", extra="ignore")
