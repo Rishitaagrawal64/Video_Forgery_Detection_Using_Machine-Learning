@@ -7,7 +7,7 @@ CNN-based system that analyses video frames and classifies a video as REAL or AI
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env
-uvicorn app.main:app --reload      # Swagger UI: http://localhost:8000/docs
+python -m uvicorn app.main:app --reload      # Swagger UI: http://localhost:8000/docs
 pytest
 ```
 Docker: `docker build -t forgery-api . && docker run -p 8000:8000 forgery-api`
