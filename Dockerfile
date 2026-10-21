@@ -3,10 +3,12 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /srv
 
-# System dependencies for OpenCV and video handling
+# Make apt more tolerant of slow or proxied networks (Docker Desktop on Windows can stall on large downloads)
+RUN printf 'Acquire::ForceIPv4 "true";\nAcquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::http::Pipeline-Depth "0";\n' > /etc/apt/apt.conf.d/99network
+
+# System library for OpenCV (the headless build does not need libgl1)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
-    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python requirements

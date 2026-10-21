@@ -1,21 +1,29 @@
-```ignore
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
-.env
 .pytest_cache/
-.idea/
-.vscode/
 *.egg-info/
 
-# runtime data
+# Editors
+.idea/
+.vscode/
+
+# Secrets: never commit these (only .env.example is allowed)
+.env
+.env.*
+!.env.example
+
+# Runtime data
 data/uploads/*
 data/frames/*
 !data/uploads/.gitkeep
 !data/frames/.gitkeep
+data/*.db
 
-# models / large files
+# Models and large files
+models/
 *.h5
 *.keras
 *.pt
@@ -24,7 +32,7 @@ data/frames/*
 *.avi
 *.mov
 *.zip
-data/uploads/*
-data/frames/*
-!data/**/.gitkeep: are this not in file 
-```.env.docker
+
+# Frontend
+node_modules/
+dist/
