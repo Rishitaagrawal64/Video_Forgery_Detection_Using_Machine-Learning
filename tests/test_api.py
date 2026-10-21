@@ -46,6 +46,17 @@ def test_rejects_bad_extension():
     r = client.post("/api/v1/videos", files={"file": ("notes.txt", b"hello", "text/plain")})
     assert r.status_code == 415
 
+def test_rejects_empty_upload():
+    from app.core.config import settings
+
+    r = client.post(
+        "/api/v1/videos",
+        files={"file": ("empty.mp4", b"", "video/mp4")},
+    )
+
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Uploaded file is empty"
+    assert list(settings.upload_dir.iterdir()) == []
 
 def test_corrupt_video_marks_job_failed(tmp_path):
     bad = tmp_path / "bad.mp4"
