@@ -1,0 +1,67 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,'Segoe UI',Roboto,'Liberation Sans',Arial,'DejaVu Sans',sans-serif;color:#0f172a;background:#f4f6fb;-webkit-font-smoothing:antialiased}
+.app{width:100%;min-height:100vh;display:flex;flex-direction:column}
+.top{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.logo{width:30px;height:30px;border-radius:9px;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;gap:4px;font-size:13px}
+.nav span{padding:6px 10px;border-radius:8px;color:#475569}
+.nav span.on{background:#eef2ff;color:#4338ca;font-weight:600}
+main{padding:20px 16px 28px;flex:1}
+h1{font-size:22px;line-height:1.25;font-weight:800;letter-spacing:-.2px}
+.sub{color:#475569;font-size:14px;line-height:1.5;margin-top:6px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px}
+.drop{margin-top:18px;border:2px dashed #a5b4fc;background:#f8f9ff;border-radius:16px;padding:26px 16px;text-align:center}
+.drop .ic{width:52px;height:52px;border-radius:50%;background:#e0e7ff;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
+.drop b{font-size:15px}.drop p{font-size:12.5px;color:#64748b;margin-top:6px;line-height:1.5}
+.btn{display:block;width:100%;text-align:center;padding:13px 16px;border-radius:12px;font-weight:700;font-size:15px;background:#4f46e5;color:#fff;margin-top:14px}
+.btn.ghost{background:#fff;color:#334155;border:1px solid #cbd5e1}
+.btn.dis{background:#c7d2fe}
+.file{margin-top:14px;display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;font-size:13.5px}
+.file small{color:#64748b;display:block;font-size:12px}
+.note{margin-top:14px;font-size:12.5px;color:#475569;display:flex;gap:8px;align-items:flex-start;line-height:1.45}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px}
+.pill.real{background:#dcfce7;color:#166534}.pill.fake{background:#fee2e2;color:#991b1b}
+.verdict{border-radius:16px;padding:18px 16px}
+.verdict.real{background:#ecfdf3;border:1px solid #86efac}.verdict.fake{background:#fef2f2;border:1px solid #fca5a5}
+.verdict .lab{font-size:12px;font-weight:700;letter-spacing:.8px;color:#475569}
+.verdict .big{font-size:24px;font-weight:800;margin-top:4px}
+.verdict.real .big{color:#15803d}.verdict.fake .big{color:#b91c1c}
+.meter{height:10px;border-radius:99px;background:#e2e8f0;margin-top:12px;position:relative;overflow:hidden}
+.meter i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.meter .tick{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:#0f172a;opacity:.55}
+.mlab{display:flex;justify-content:space-between;font-size:12px;color:#475569;margin-top:6px}
+.sec{margin-top:18px}.sec h2{font-size:14px;font-weight:700;margin-bottom:10px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:96px;position:relative;padding-top:2px}
+.bars div{flex:1;border-radius:4px 4px 0 0}
+.bars .thr{position:absolute;left:0;right:0;bottom:50%;border-top:1.5px dashed #0f172a;opacity:.45;background:none;height:0;flex:none}
+.cap{font-size:11.5px;color:#64748b;margin-top:6px;display:flex;justify-content:space-between}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:13.5px}
+.dl dt{color:#64748b}.dl dd{font-weight:600;text-align:right}
+.disc{font-size:12px;color:#64748b;margin-top:14px;line-height:1.5}
+.spin{width:64px;height:64px;border-radius:50%;border:6px solid #e0e7ff;border-top-color:#4f46e5;margin:6px auto 14px}
+.steps{margin-top:16px;font-size:14px}.steps div{display:flex;align-items:center;gap:10px;padding:8px 0;color:#94a3b8}
+.steps .ok{color:#15803d}.steps .now{color:#4338ca;font-weight:700}
+.dot{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;border:2px solid currentColor}
+.ok .dot{background:#15803d;color:#fff;border-color:#15803d}.now .dot{border-color:#4f46e5;background:#e0e7ff}
+.row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #eef2f7}
+.row:last-child{border-bottom:none}
+.row .main{flex:1;min-width:0}.row .name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .meta{font-size:12px;color:#64748b;margin-top:2px}
+.trash{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;border:1px solid #e2e8f0}
+.alert{border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.45;display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.alert b{display:block;margin-bottom:2px}
+.alert.err{background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d}
+.alert.warn{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+.alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
+.alert svg{flex:none;margin-top:1px}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.8px;color:#64748b;margin:18px 0 8px}
+/* desktop */
+.desk .top{padding:16px 64px}.desk main{padding:40px 64px;max-width:1440px;width:100%;margin:0 auto}
+.desk h1{font-size:32px}.desk .sub{font-size:16px;max-width:640px}
+.two{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:24px;align-items:start}
+.desk .bars{height:200px;gap:8px}.desk .btn{width:auto;display:inline-block;padding:13px 26px}
+table{width:100%;border-collapse:collapse;font-size:14px}th{font-size:12px;color:#64748b;text-align:left;padding:10px 12px;border-bottom:1px solid #e2e8f0}
+td{padding:14px 12px;border-bottom:1px solid #eef2f7}
+</style></head><body><div class="app desk"><div class="top"><div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>Forgery Detector</div><div class="nav"><span class="on">Analyze</span><span class="">History</span></div></div><main><p class="sub" style="margin:0 0 4px">Result for <b>sample_clip.mp4</b></p><h1>Analysis complete</h1><div class="two"><div><div class="verdict fake"><div class="lab">RESULT</div><div class="big">AI-GENERATED FORGED</div><div class="meter"><i style="width:81%;background:#ef4444"></i><span class="tick"></span></div><div class="mlab"><span>Forged probability <b>81%</b></span><span>above 50% line</span></div></div><div class="card" style="margin-top:20px"><dl class="dl"><dt>Frames analysed</dt><dd>16</dd><dt>Video</dt><dd>1280 x 720 px, 24 fps, 2.2 s</dd><dt>Model</dt><dd>torch-cnn</dd><dt>Processing time</dt><dd>0.7 s</dd></dl></div><p class="disc">This is a statistical estimate from a machine-learning model, not proof. Use it to decide what to check further.</p><a class="btn" style="margin-top:18px">Check another video</a></div><div class="card"><h2 style="font-size:16px;margin-bottom:6px">Frame-by-frame scores</h2><p class="sub" style="margin:0 0 16px;font-size:13.5px">Each bar is one analysed frame. Bars above the dashed line look AI-generated to the model.</p><div class="bars"><div title="Frame 1: 0.83" style="height:83%;background:#ef4444"></div><div title="Frame 2: 0.78" style="height:78%;background:#ef4444"></div><div title="Frame 3: 0.84" style="height:84%;background:#ef4444"></div><div title="Frame 4: 0.85" style="height:85%;background:#ef4444"></div><div title="Frame 5: 0.82" style="height:82%;background:#ef4444"></div><div title="Frame 6: 0.82" style="height:82%;background:#ef4444"></div><div title="Frame 7: 0.78" style="height:78%;background:#ef4444"></div><div title="Frame 8: 0.79" style="height:79%;background:#ef4444"></div><div title="Frame 9: 0.80" style="height:80%;background:#ef4444"></div><div title="Frame 10: 0.79" style="height:79%;background:#ef4444"></div><div title="Frame 11: 0.80" style="height:80%;background:#ef4444"></div><div title="Frame 12: 0.81" style="height:81%;background:#ef4444"></div><div title="Frame 13: 0.82" style="height:82%;background:#ef4444"></div><div title="Frame 14: 0.80" style="height:80%;background:#ef4444"></div><div title="Frame 15: 0.80" style="height:80%;background:#ef4444"></div><div title="Frame 16: 0.83" style="height:83%;background:#ef4444"></div><div class="thr"></div></div><div class="cap"><span>Frame 1</span><span>- - threshold 0.5</span><span>Frame 16</span></div></div></div></main></div></body></html>

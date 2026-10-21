@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset=utf-8><style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Liberation Sans',Arial,sans-serif;background:#fff;color:#111;padding:28px}
+h1{font-size:22px;margin-bottom:4px}.s{color:#555;font-size:13px;margin-bottom:22px}
+.grid{display:flex;gap:22px;align-items:flex-start}
+.fr{width:228px}.fr .t{font-weight:700;font-size:13px;margin-bottom:8px}
+.ph{height:470px;border:2px solid #222;border-radius:22px;padding:14px 12px;background:#fafafa;position:relative}
+.bar{height:22px;border:1.5px solid #555;margin-bottom:12px;font-size:10px;display:flex;align-items:center;padding:0 6px;color:#333;justify-content:space-between}
+.bx{border:1.5px solid #555;margin-bottom:10px;font-size:11px;color:#333;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;background:#fff}
+.dash{border-style:dashed}.btn{background:#ddd;font-weight:700}
+.ln{height:7px;background:#ccc;margin:5px 0;border-radius:2px}
+.bs{display:flex;align-items:flex-end;gap:3px;height:60px;border-bottom:1.5px solid #555;margin:6px 0 10px}.bs i{flex:1;background:#bbb}
+.row{display:flex;justify-content:space-between;align-items:center;border:1.5px solid #555;padding:5px 6px;margin-bottom:6px;font-size:10px;background:#fff}
+.an{font-size:10.5px;color:#444;margin-top:8px;line-height:1.4}
+</style></head><body>
+<h1>Wireframes: Video Forgery Detector (mobile, 360 px)</h1><div class="s">Low-fidelity layout only. Each screen shows which API call supplies its data.</div><div class="grid">
+<div class="fr"><div class="t">1. Upload</div><div class="ph"><div class="bar"><b>Forgery Detector</b><span>Analyze | History</span></div><div class="bx" style="height:34px;border:none;background:none;font-weight:700;font-size:14px">Is this video AI-generated?</div>
+<div class="bx dash" style="height:120px">Drop a video here<br>or [Choose file]<br>MP4/AVI/MOV/MKV/WebM, max 50 MB</div><div class="bx" style="height:34px">sample_clip.mp4 &middot; 12.4 MB &nbsp; [x]</div><div class="bx btn" style="height:38px">Analyze video</div><div class="an">Note: video deleted after analysis</div></div>
+<div class="an">POST /api/v1/videos<br>POST /api/v1/videos/{id}/analyze</div></div>
+<div class="fr"><div class="t">2. Processing</div><div class="ph"><div class="bar"><b>Forgery Detector</b><span>Analyze | History</span></div><div class="bx" style="height:90px;border-radius:50%;width:90px;margin:20px auto">spinner</div><div class="bx" style="height:34px;border:none;background:none;font-weight:700">Analysing your video...</div>
+<div class="ln"></div><div class="ln" style="width:70%"></div><div class="bx" style="height:26px">Status: processing</div></div><div class="an">GET /api/v1/jobs/{id}<br>(poll every 1.5 s)</div></div>
+<div class="fr"><div class="t">3. Result</div><div class="ph"><div class="bar"><b>Forgery Detector</b><span>Analyze | History</span></div><div class="bx" style="height:78px;font-weight:700;font-size:13px;flex-direction:column">AI-GENERATED FORGED<br>or REAL<br><span style="font-weight:400;font-size:10px">Forged probability 81% [=====|--]</span></div>
+<div style="font-size:10px;font-weight:700">Frame scores</div><div class="bs"><i style="height:80%"></i><i style="height:85%"></i><i style="height:78%"></i><i style="height:90%"></i><i style="height:82%"></i><i style="height:84%"></i><i style="height:79%"></i><i style="height:88%"></i><i style="height:81%"></i><i style="height:86%"></i><i style="height:83%"></i><i style="height:80%"></i></div><div class="bx" style="height:62px">Frames 16 &middot; 1280x720<br>Model torch-cnn &middot; 0.7 s</div><div class="bx btn" style="height:32px">Check another video</div></div><div class="an">GET /api/v1/jobs/{id}<br>result.label, forged_probability, frame_scores</div></div>
+<div class="fr"><div class="t">4. History</div><div class="ph"><div class="bar"><b>Forgery Detector</b><span>Analyze | History</span></div><div class="row"><span>clip1.mp4<br>21 Oct</span><b>[FORGED]</b><span>[x]</span></div><div class="row"><span>clip2.mp4<br>20 Oct</span><b>[REAL]</b><span>[x]</span></div><div class="row"><span>clip3.mp4<br>19 Oct</span><b>[FORGED]</b><span>[x]</span></div><div class="row"><span>clip4.avi<br>18 Oct</span><b>[REAL]</b><span>[x]</span></div><div class="bx btn" style="height:30px">Load more</div></div><div class="an">GET /api/v1/jobs?limit=20&offset=0<br>DELETE /api/v1/videos/{id}</div></div>
+<div class="fr"><div class="t">5. Errors</div><div class="ph"><div class="bar"><b>Forgery Detector</b><span>Analyze | History</span></div><div class="bx" style="height:50px">File larger than 50 MB (413)</div><div class="bx" style="height:50px">File type not supported (415)</div><div class="bx" style="height:50px">Upload again: file was deleted (410)</div><div class="bx" style="height:50px">Analysis failed: reason [Try again]</div></div><div class="an">Shown as messages above the<br>upload area or the result</div></div>
+</div></body></html>
