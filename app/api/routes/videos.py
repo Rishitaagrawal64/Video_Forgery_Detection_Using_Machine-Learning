@@ -76,6 +76,8 @@ def upload_video(file: UploadFile = File(...)) -> UploadResponse:
                 if written > max_bytes:
                     raise HTTPException(413, f"File exceeds {settings.max_upload_mb} MB limit")
                 out.write(chunk)
+        if written == 0:
+            raise HTTPException(400, "Uploaded file is empty")
     except BaseException:
         dest.unlink(missing_ok=True)  # never leave partial uploads behind
         raise
