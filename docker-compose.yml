@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: forgery
     volumes:
-      - pgdata:/var/lib/postgresql/data   # keeps your data when containers restart
+      - pgdata:/var/lib/postgresql/data   
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U forgery -d forgery"]
       interval: 5s
