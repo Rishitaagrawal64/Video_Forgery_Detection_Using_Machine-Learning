@@ -30,6 +30,13 @@ COLLEGE_NAME = "Swami Keshvanand Institute of Technology, Management & Gramothan
 DEPARTMENT_NAME = "Department of Computer Science & Engineering"
 OUTPUT_DIR = Path("weekly_reports")
 
+# If the same student commits under different names (e.g. from different laptops or
+# the GitHub web editor), map every variant to ONE display name here.
+# Keys are matched case-insensitively. Check the "Authors found" lines in the
+# workflow log to see which name/email variants exist.
+# Example: {"dekxmax": "Dekx Max", "dekx max": "Dekx Max", "dekxmax@gmail.com": "Dekx Max"}
+AUTHOR_ALIASES: dict[str, str] = {}
+
 
 def run_git(args: list[str]) -> str:
     return subprocess.check_output(
@@ -51,6 +58,35 @@ def get_repo_info() -> tuple[str, str]:
     return repo_name, branch
 
 
+_name_registry: dict[str, str] = {}   # lowercase name  -> display name
+_email_registry: dict[str, str] = {}  # lowercase email -> display name
+
+
+def canonical_author(name: str, email: str) -> str:
+    """Merge one person's identities: AUTHOR_ALIASES first, then same email, then same name ignoring case/spacing."""
+    name = " ".join(name.split())
+    email_key = email.strip().lower()
+    aliases = {k.strip().lower(): v for k, v in AUTHOR_ALIASES.items()}
+
+    for key in (name.lower(), email_key):
+        if key in aliases:
+            display = aliases[key]
+            _name_registry[name.lower()] = display
+            _email_registry[email_key] = display
+            return display
+
+    display = _email_registry.get(email_key) or _name_registry.get(name.lower()) or name
+    _name_registry.setdefault(name.lower(), display)
+    _email_registry.setdefault(email_key, display)
+    return display
+
+
+def is_bot(author: str) -> bool:
+    """Skip only real bot accounts (e.g. 'github-actions[bot]'), not names like 'Abbott'."""
+    name = author.lower()
+    return name.endswith("[bot]") or "github-actions" in name
+
+
 def get_git_metrics(interval: str = "weekly"):
     today = dt.date.today()
     if interval == "weekly":
@@ -67,7 +103,7 @@ def get_git_metrics(interval: str = "weekly"):
     else:
         raise ValueError("Interval must be weekly, monthly, or final.")
 
-    log_format = "COMMIT|||%h|||%an|||%ad|||%s"
+    log_format = "COMMIT|||%h|||%aN|||%aE|||%ad|||%s"  # %aN/%aE honour .mailmap
     raw = run_git([
         "log", "--no-merges", f"--pretty=format:{log_format}",
         "--date=short", "--numstat", *date_args,
@@ -78,8 +114,8 @@ def get_git_metrics(interval: str = "weekly"):
     )
     timeline = defaultdict(lambda: defaultdict(int))
     student_logs = defaultdict(list)
+    seen_identities: set[str] = set()
     current_author = None
-    current_date = None
 
     for raw_line in raw.splitlines():
         line = raw_line.strip()
@@ -87,17 +123,18 @@ def get_git_metrics(interval: str = "weekly"):
             continue
 
         if line.startswith("COMMIT|||"):
-            parts = line.split("|||", 4)
-            if len(parts) < 5:
+            parts = line.split("|||", 5)
+            if len(parts) < 6:
                 current_author = None
                 continue
-            _, sha, author, date_str, message = parts
-            if "bot" in author.lower() or "github-actions" in author.lower():
+            _, sha, raw_author, email, date_str, message = parts
+            if is_bot(raw_author):
                 current_author = None
                 continue
 
+            author = canonical_author(raw_author, email)
+            seen_identities.add(f"{raw_author} <{email}> -> {author}")
             current_author = author
-            current_date = date_str
             data = students[author]
             data["commits"] += 1
             data["active_days"].add(date_str)
@@ -105,10 +142,12 @@ def get_git_metrics(interval: str = "weekly"):
 
             try:
                 commit_date = dt.datetime.strptime(date_str, "%Y-%m-%d").date()
+                # Keys are chronologically sortable; pretty labels are made in make_chart().
                 if interval == "weekly":
-                    period_key = commit_date.strftime("%a (%b %d)")
+                    period_key = commit_date.isoformat()  # e.g. 2026-10-22
                 elif interval == "monthly":
-                    period_key = f"{commit_date.year}-W{commit_date.isocalendar().week:02d}"
+                    iso = commit_date.isocalendar()
+                    period_key = f"{iso.year}-W{iso.week:02d}"
                 else:
                     period_key = commit_date.strftime("%Y-%m")
                 timeline[period_key][author] += 1
@@ -120,18 +159,31 @@ def get_git_metrics(interval: str = "weekly"):
                 students[current_author]["added"] += int(parts[0])
                 students[current_author]["deleted"] += int(parts[1])
 
+    for identity in sorted(seen_identities):
+        print(f"Authors found: {identity}")
+
     return students, timeline, student_logs, scope_title
+
+
+def pretty_label(period_key: str, interval: str) -> str:
+    if interval == "weekly":
+        try:
+            return dt.date.fromisoformat(period_key).strftime("%a (%b %d)")
+        except ValueError:
+            return period_key
+    return period_key
 
 
 def make_chart(students, timeline, interval: str) -> io.BytesIO:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 3.5))
     authors = list(students.keys())
-    periods = sorted(timeline.keys())
+    periods = sorted(timeline.keys())  # chronological thanks to sortable keys
+    labels = [pretty_label(p, interval) for p in periods]
 
     if periods and authors:
         for author in authors:
             values = [timeline[p].get(author, 0) for p in periods]
-            ax1.plot(periods, values, marker="o", linewidth=1.8, label=author)
+            ax1.plot(labels, values, marker="o", linewidth=1.8, label=author)
         ax1.set_title(f"Commit Timeline ({interval.title()})")
         ax1.set_ylabel("Commits")
         ax1.tick_params(axis="x", rotation=35)
