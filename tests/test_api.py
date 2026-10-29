@@ -135,3 +135,8 @@ def test_cannot_delete_while_processing(sample_video):
     job_store.update(vid, status="uploaded")
     assert client.delete(f"/api/v1/videos/{vid}").status_code == 204
 
+
+
+def test_startup_loads_predictor():
+    with TestClient(app) as c:  # runs the lifespan handler
+        assert c.get("/health").json()["predictor"]
