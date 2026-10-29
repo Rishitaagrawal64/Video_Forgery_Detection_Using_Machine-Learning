@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import shutil
 import time
 from pathlib import Path
@@ -19,7 +20,14 @@ from app.schemas.video import (
 from app.services.job_store import job_store
 from app.services.pipeline import run_pipeline
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["videos"])
+
+
+def _cleanup_files(path: str) -> None:
+    """Remove an uploaded video and any frames saved for it (NFR-005)."""
+    Path(path).unlink(missing_ok=True)
+    shutil.rmtree(settings.frames_dir / Path(path).stem, ignore_errors=True)
 
 
 def _to_job_response(job: dict) -> JobResponse:
@@ -51,12 +59,13 @@ def _process(video_id: str, num_frames: int, detect_faces: bool) -> None:
         job_store.update(video_id, status="completed", result=result)
     except VideoError as exc:
         job_store.update(video_id, status="failed", error=str(exc))
-    except Exception as exc:  # noqa: BLE001 - surface any failure to the job record
-        job_store.update(video_id, status="failed", error=f"Internal error: {exc}")
+    except Exception:  # noqa: BLE001 - never let a worker crash silently
+        # Full traceback goes to the server log; the client only sees a generic message.
+        logger.exception("Analysis failed for video %s", video_id)
+        job_store.update(video_id, status="failed", error="Internal error while processing the video")
     finally:
         if settings.delete_after_processing:  # NFR-005
-            Path(job["path"]).unlink(missing_ok=True)
-            shutil.rmtree(settings.frames_dir / Path(job["path"]).stem, ignore_errors=True)
+            _cleanup_files(job["path"])
 
 
 @router.post("/videos", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
@@ -120,6 +129,7 @@ def delete_video(video_id: str) -> None:
     job = job_store.get(video_id)
     if job is None:
         raise HTTPException(404, "Video not found")
-    Path(job["path"]).unlink(missing_ok=True)
-    shutil.rmtree(settings.frames_dir / Path(job["path"]).stem, ignore_errors=True)
+    if job["status"] == "processing":
+        raise HTTPException(409, "Video is being processed; try again when the job has finished")
+    _cleanup_files(job["path"])
     job_store.delete(video_id)
