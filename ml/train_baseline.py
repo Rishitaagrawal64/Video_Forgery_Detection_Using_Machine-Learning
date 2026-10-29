@@ -42,11 +42,10 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from torch.utils.data import DataLoader, Dataset
-from torchvision import models, transforms as T
-
 from split import scan_dataset, split_by_video, summarize
-
+from torch.utils.data import DataLoader, Dataset
+from torchvision import models
+from torchvision import transforms as T
 
 MEAN = [0.485, 0.456, 0.406]
 STD = [0.229, 0.224, 0.225]

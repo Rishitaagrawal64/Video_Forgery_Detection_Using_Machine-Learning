@@ -26,6 +26,7 @@ services:
       FORGERY_DATABASE_URL: postgresql+psycopg://forgery:${POSTGRES_PASSWORD}@db:5432/forgery
       FORGERY_PREDICTOR: ${FORGERY_PREDICTOR:-heuristic}
       FORGERY_MAX_UPLOAD_MB: "50"
+      FORGERY_DECISION_THRESHOLD: ${FORGERY_DECISION_THRESHOLD:-0.5}
     ports:
       - "8000:8000"
 

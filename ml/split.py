@@ -61,7 +61,7 @@ def split_by_video(items, val_frac: float = 0.15, test_frac: float = 0.15, seed:
 
 
 def summarize(name: str, rows) -> str:
-    n_fake = sum(1 for _, l, _ in rows if l == 1)
+    n_fake = sum(1 for _, label, _ in rows if label == 1)
     vids = {v for _, _, v in rows}
     return f"{name}: {len(rows)} frames, {len(vids)} videos, fake frames {n_fake} ({n_fake / max(len(rows), 1):.0%})"
 

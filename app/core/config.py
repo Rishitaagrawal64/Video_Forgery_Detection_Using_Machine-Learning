@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -26,6 +28,12 @@ class Settings(BaseSettings):
     # Which predictor to load (see app/models/registry.py)
     predictor: str = "heuristic"
     model_path: str | None = None
+
+    # Video-level decision. The trained model's validation-selected threshold is written to
+    # ml/out/metrics.json ("threshold") by ml/train_baseline.py - set FORGERY_DECISION_THRESHOLD to it.
+    decision_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    aggregation: Literal["mean", "median", "topk"] = "mean"  # how frame scores become one video score
+    topk_fraction: float = Field(default=0.3, gt=0.0, le=1.0)  # used when aggregation == "topk"
 
     # e.g. postgresql+psycopg://user:pass@db:5432/forgery  (empty -> in-memory store, jobs lost on restart)
     database_url: str | None = None

@@ -25,15 +25,16 @@
   Batches are channels-last float32 `(N, 224, 224, 3)` (Keras/TF layout; transpose for PyTorch).
 - **Async job model:** upload returns immediately; analysis runs in a background task; the client polls
   `GET /api/v1/jobs/{id}`. Statuses: `uploaded → processing → completed | failed`.
-- **Storage seam:** `JobStore` is the single persistence interface (in-memory now). Replacing it with a DB
-  repository requires no route changes.
+- **Storage seam:** `JobStore` is the single persistence interface. `FORGERY_DATABASE_URL` switches from the in-memory
+  store to `SqlJobStore` (PostgreSQL/SQLite, see `docs/database.md`) with no route changes.
 - **Uniform sampling** (default 16 frames) covers the whole clip, which suits video-level classification;
   fps-based sampling is available for temporal models.
-- **Video-level score** = mean of per-frame forged probabilities; threshold 0.5.
+- **Video-level score** = aggregation of per-frame forged probabilities (`FORGERY_AGGREGATION`, default mean) compared
+  with `FORGERY_DECISION_THRESHOLD` (default 0.5; use the validation-selected value from training).
 - **Safety:** extension allow-list, streamed size limit (default 50 MB), corrupt files mark the job `failed`.
 
 ## Known limits / next steps (from 19/10/26)
 
-- Replace in-memory store with DB (Tapesh) and move long jobs to a worker queue if needed.
-- Integrate the trained CNN; tune frame count/size/normalization to match training.
+- Move long jobs to a worker queue if needed.
+- Validate the trained CNN end to end with `scripts/evaluate_pipeline.py` (see `docs/model_card.md`).
 - Add auth/rate limiting before public deployment.

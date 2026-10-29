@@ -106,3 +106,37 @@ def test_file_deleted_after_processing(sample_video):
     assert job["result"]["processing_sec"] is not None
     assert list(settings.upload_dir.iterdir()) == []  # NFR-005
     assert client.post(f"/api/v1/videos/{vid}/analyze").status_code == 410
+
+
+def test_internal_errors_are_not_leaked(sample_video, monkeypatch):
+    from app.api.routes import videos
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("secret path /srv/model.pt")
+
+    monkeypatch.setattr(videos, "run_pipeline", boom)
+    vid = _upload(sample_video)
+    client.post(f"/api/v1/videos/{vid}/analyze")
+    for _ in range(50):
+        job = client.get(f"/api/v1/jobs/{vid}").json()
+        if job["status"] in ("completed", "failed"):
+            break
+        time.sleep(0.1)
+    assert job["status"] == "failed"
+    assert "secret" not in job["error"]
+
+
+def test_cannot_delete_while_processing(sample_video):
+    from app.services.job_store import job_store
+
+    vid = _upload(sample_video)
+    job_store.update(vid, status="processing")
+    assert client.delete(f"/api/v1/videos/{vid}").status_code == 409
+    job_store.update(vid, status="uploaded")
+    assert client.delete(f"/api/v1/videos/{vid}").status_code == 204
+
+
+
+def test_startup_loads_predictor():
+    with TestClient(app) as c:  # runs the lifespan handler
+        assert c.get("/health").json()["predictor"]
