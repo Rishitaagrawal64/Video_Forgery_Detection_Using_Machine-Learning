@@ -18,3 +18,13 @@ export interface Job {
   result: AnalysisResult | null;
   error: string | null;
 }
+export interface AnalyzeOptions {
+  num_frames?: number;   // 1-128, backend default is 16
+  detect_faces?: boolean;
+}
+
+export interface HealthResponse {
+  status: string;
+  version: string;
+  predictor: string; // "heuristic", "torch" or "keras"
+}
