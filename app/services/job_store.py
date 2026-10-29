@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -23,7 +23,7 @@ class JobStore:
                 "filename": filename,
                 "path": path,
                 "status": "uploaded",
-                "created_at": datetime.now(timezone.utc),
+                "created_at": datetime.now(UTC),
                 "result": None,
                 "error": None,
             }

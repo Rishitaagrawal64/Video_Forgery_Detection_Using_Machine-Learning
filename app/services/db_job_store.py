@@ -8,7 +8,7 @@ Two tables:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, select
@@ -20,7 +20,7 @@ JsonType = JSON().with_variant(JSONB(), "postgresql")
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Base(DeclarativeBase):
@@ -56,7 +56,7 @@ class PredictionRow(Base):
 
 def _aware(dt: datetime | None) -> datetime | None:
     # SQLite drops tzinfo; PostgreSQL keeps it. Normalise so the API always returns UTC-aware values.
-    return dt.replace(tzinfo=timezone.utc) if dt is not None and dt.tzinfo is None else dt
+    return dt.replace(tzinfo=UTC) if dt is not None and dt.tzinfo is None else dt
 
 
 class SqlJobStore:
