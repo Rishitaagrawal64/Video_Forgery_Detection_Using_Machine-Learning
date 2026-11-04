@@ -6,8 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import health, videos
 from app.core.config import settings
+from app.core.logging import setup_logging
 from app.models.registry import get_predictor
 
+setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
 
 

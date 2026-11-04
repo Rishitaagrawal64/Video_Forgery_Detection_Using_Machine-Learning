@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     app_name: str = "AI Video Forgery Detection API"
     app_version: str = "0.1.0"
+    log_level: str = "INFO"
 
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     frames_dir: Path = BASE_DIR / "data" / "frames"
