@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import UploadDropzone from "./components/UploadDropzone";
 import ResultCard from "./components/ResultCard";
-import { uploadVideo, analyzeVideo, getJob, getModelInfo } from "./api/client";
+import ProgressStatus from "./components/ProgressStatus";
+import ErrorMessage from "./components/ErrorMessage";
+import HistoryList from "./components/HistoryList";
+import {
+  uploadVideo,
+  analyzeVideo,
+  getJob,
+  listJobs,
+  deleteVideo,
+  getModelInfo,
+} from "./api/client";
 import type { Job, ModelInfo } from "./types";
 
 export default function App() {
   const [job, setJob] = useState<Job | null>(null);
+  const [history, setHistory] = useState<Job[]>([]);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [model, setModel] = useState<ModelInfo | null>(null);
@@ -13,6 +24,18 @@ export default function App() {
   useEffect(() => {
     // Optional extra: the app still works if the endpoint is unavailable.
     getModelInfo().then(setModel).catch(() => setModel(null));
+  }, []);
+
+  async function refreshHistory() {
+    try {
+      setHistory(await listJobs());
+    } catch {
+      /* history is optional; ignore errors */
+    }
+  }
+
+  useEffect(() => {
+    refreshHistory();
   }, []);
 
   async function handleFile(file: File) {
@@ -32,10 +55,22 @@ export default function App() {
       setMsg(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setBusy(false);
+      refreshHistory();
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteVideo(id);
+      if (job?.video_id === id) setJob(null);
+      await refreshHistory();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Could not delete");
     }
   }
 
   const res = job?.result;
+  const inProgress = job && job.status !== "completed" && job.status !== "failed";
 
   return (
     <main className="mx-auto max-w-xl p-4 sm:p-8">
@@ -48,14 +83,25 @@ export default function App() {
         <UploadDropzone onFile={handleFile} disabled={busy} />
       </div>
 
-      {msg && <p className="mt-4 rounded bg-red-50 p-3 text-red-700">{msg}</p>}
-      {busy && !res && (
-        <p className="mt-4 text-gray-700">Status: {job?.status ?? "uploading"}...</p>
+      {busy && !job && (
+        <div className="mt-4">
+          <ProgressStatus status="uploaded" />
+        </div>
+      )}
+      {inProgress && (
+        <div className="mt-4">
+          <ProgressStatus status={job.status} />
+        </div>
+      )}
+      {msg && (
+        <div className="mt-4">
+          <ErrorMessage message={msg} />
+        </div>
       )}
       {job?.status === "failed" && (
-        <p className="mt-4 rounded bg-red-50 p-3 text-red-700">
-          {job.error ?? "Analysis failed"}
-        </p>
+        <div className="mt-4">
+          <ErrorMessage message={job.error ?? "Analysis failed"} />
+        </div>
       )}
 
       {res && (
@@ -63,6 +109,9 @@ export default function App() {
           <ResultCard result={res} threshold={model?.decision_threshold} />
         </div>
       )}
+
+      <h2 className="mt-8 mb-2 text-lg font-semibold">History</h2>
+      <HistoryList jobs={history} onDelete={handleDelete} />
 
       {model && (
         <p className="mt-8 text-xs text-gray-500">
