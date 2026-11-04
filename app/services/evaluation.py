@@ -56,3 +56,21 @@ def compute_metrics(y_true, probabilities, threshold: float = 0.5) -> dict[str, 
         "auc": None if auc is None else round(auc, 4),
         "tp": tp, "tn": tn, "fp": fp, "fn": fn,
     }
+
+
+def best_f1_threshold(y_true, probabilities) -> dict[str, float]:
+    """Threshold that maximizes F1 (ties: the one closest to 0.5).
+
+    Candidates are midpoints between consecutive distinct scores. Choose it on VALIDATION videos only;
+    picking it on the test set and then reporting test metrics inflates the result.
+    """
+    y = np.asarray(y_true).astype(int)
+    p = np.asarray(probabilities, dtype=float)
+    scores = np.unique(p)
+    candidates = scores if scores.size == 1 else (scores[:-1] + scores[1:]) / 2.0
+    best_t, best_f1 = 0.5, -1.0
+    for t in candidates:
+        f1 = float(compute_metrics(y, p, float(t))["f1"])
+        if f1 > best_f1 or (f1 == best_f1 and abs(t - 0.5) < abs(best_t - 0.5)):
+            best_t, best_f1 = float(t), f1
+    return {"threshold": round(best_t, 4), "f1": round(best_f1, 4)}

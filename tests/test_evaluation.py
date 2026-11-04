@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from app.services.evaluation import compute_metrics, roc_auc
+from app.services.evaluation import best_f1_threshold, compute_metrics, roc_auc
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,3 +52,32 @@ def test_evaluate_script_runs_end_to_end(tmp_path, sample_video):
     report = json.loads(out.read_text())
     assert report["metrics"]["n"] == 2
     assert report["failed_videos"] == []
+    assert len(report["predictions"]) == 2
+    assert "suggested_threshold" not in report
+
+
+def test_best_f1_threshold_separates_classes():
+    out = best_f1_threshold([0, 0, 0, 1, 1, 1], [0.1, 0.2, 0.3, 0.6, 0.7, 0.9])
+    assert out["f1"] == 1.0
+    assert 0.3 < out["threshold"] < 0.6
+
+
+def test_best_f1_threshold_prefers_closest_to_half_on_ties():
+    out = best_f1_threshold([0, 1], [0.2, 0.8])
+    assert out["threshold"] == 0.5
+
+
+def test_best_f1_threshold_single_score():
+    assert best_f1_threshold([0, 1], [0.4, 0.4])["threshold"] == 0.4
+
+
+def test_find_threshold_flag(tmp_path, sample_video):
+    for d in ("real", "fake"):
+        (tmp_path / d).mkdir()
+        (tmp_path / d / "a.avi").write_bytes(Path(sample_video).read_bytes())
+    proc = subprocess.run(
+        [sys.executable, "scripts/evaluate_pipeline.py", "--data", str(tmp_path), "--find-threshold"],
+        cwd=ROOT, capture_output=True, text=True, timeout=120,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert '"suggested_threshold"' in proc.stdout
