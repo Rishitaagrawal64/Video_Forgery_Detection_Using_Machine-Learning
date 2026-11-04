@@ -36,3 +36,6 @@ models/
 # Frontend
 node_modules/
 dist/
+# Test coverage
+.coverage
+htmlcov/

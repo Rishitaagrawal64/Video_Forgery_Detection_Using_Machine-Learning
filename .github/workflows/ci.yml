@@ -21,8 +21,8 @@ jobs:
       - run: pip install -r requirements-dev.txt ruff
       - name: Lint
         run: ruff check .
-      - name: Test
-        run: pytest -q
+      - name: Test (with coverage)
+        run: pytest -q --cov=app --cov-report=term-missing
 
   frontend:
     runs-on: ubuntu-24.04

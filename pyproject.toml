@@ -2,6 +2,13 @@
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
 
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/models/registry.py"]  # torch/keras adapters need heavy optional deps
+
+[tool.coverage.report]
+exclude_also = ["if __name__ == .__main__.:"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py312"
