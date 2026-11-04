@@ -10,12 +10,14 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     app_name: str = "AI Video Forgery Detection API"
     app_version: str = "0.1.0"
+    log_level: str = "INFO"
 
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     frames_dir: Path = BASE_DIR / "data" / "frames"
 
     max_upload_mb: int = 50  # Functional Requirements, Constraint 2
     delete_after_processing: bool = True  # NFR-005: privacy
+    stale_file_ttl_hours: float = 24  # purge leftover uploads/frames older than this at startup; 0 disables
     allowed_extensions: tuple[str, ...] = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 
     # Frame extraction / preprocessing defaults

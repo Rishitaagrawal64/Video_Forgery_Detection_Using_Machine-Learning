@@ -1,8 +1,15 @@
 import type { AnalysisResult } from "../types";
 
-export default function ResultCard({ result }: { result: AnalysisResult }) {
+export default function ResultCard({
+  result,
+  threshold = 0.5,
+}: {
+  result: AnalysisResult;
+  threshold?: number; // server decision threshold (0-1); defaults to 0.5 if unknown
+}) {
   const forged = result.label === "AI_GENERATED_FORGED";
   const pct = Math.min(100, Math.max(0, Math.round(result.forged_probability * 100)));
+  const thresholdPct = Math.min(100, Math.max(0, threshold * 100));
   const isPlaceholder = result.model.toLowerCase().includes("placeholder");
 
   return (
@@ -28,8 +35,8 @@ export default function ResultCard({ result }: { result: AnalysisResult }) {
         <div className="h-3 rounded-full bg-current" style={{ width: `${pct}%` }} />
         <div
           className="absolute top-[-4px] h-5 w-0.5 bg-slate-700"
-          style={{ left: "50%" }}
-          title="50% decision threshold"
+          style={{ left: `${thresholdPct}%` }}
+          title={`${Math.round(thresholdPct)}% decision threshold`}
         />
       </div>
 

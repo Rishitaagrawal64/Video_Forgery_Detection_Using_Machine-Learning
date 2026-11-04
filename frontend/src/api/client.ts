@@ -1,4 +1,4 @@
-import type { AnalyzeOptions, HealthResponse, Job } from "../types";
+import type { AnalyzeOptions, HealthResponse, Job, ModelInfo } from "../types";
 // analyzing 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api/v1";
 const ROOT = BASE.replace(/\/api\/v1$/, "");
@@ -43,4 +43,8 @@ export async function deleteVideo(id: string): Promise<void> {
 
 export async function getHealth(): Promise<HealthResponse> {
   return (await check(await fetch(`${ROOT}/health`))).json();
+}
+
+export async function getModelInfo(): Promise<ModelInfo> {
+  return (await check(await fetch(`${BASE}/model`))).json();
 }

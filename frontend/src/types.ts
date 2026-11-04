@@ -19,7 +19,7 @@ export interface Job {
   error: string | null;
 }
 export interface AnalyzeOptions {
-  num_frames?: number;   // 1-128, backend default is 16
+  num_frames?: number;   // 1-128; omit to use the server setting
   detect_faces?: boolean;
 }
 
@@ -27,4 +27,15 @@ export interface HealthResponse {
   status: string;
   version: string;
   predictor: string; // "heuristic", "torch" or "keras"
+}
+
+export interface ModelInfo {
+  predictor: string;
+  num_frames: number;
+  frame_size: number;
+  normalize_mode: string;
+  detect_faces: boolean;
+  aggregation: string;
+  topk_fraction: number;
+  decision_threshold: number;
 }

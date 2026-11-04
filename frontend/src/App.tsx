@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadDropzone from "./components/UploadDropzone";
 import ResultCard from "./components/ResultCard";
-import { uploadVideo, analyzeVideo, getJob } from "./api/client";
-import type { Job } from "./types";
+import { uploadVideo, analyzeVideo, getJob, getModelInfo } from "./api/client";
+import type { Job, ModelInfo } from "./types";
 
 export default function App() {
   const [job, setJob] = useState<Job | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [model, setModel] = useState<ModelInfo | null>(null);
+
+  useEffect(() => {
+    // Optional extra: the app still works if the endpoint is unavailable.
+    getModelInfo().then(setModel).catch(() => setModel(null));
+  }, []);
 
   async function handleFile(file: File) {
     setMsg("");
@@ -54,8 +60,15 @@ export default function App() {
 
       {res && (
         <div className="mt-6">
-          <ResultCard result={res} />
+          <ResultCard result={res} threshold={model?.decision_threshold} />
         </div>
+      )}
+
+      {model && (
+        <p className="mt-8 text-xs text-gray-500">
+          Model: {model.predictor} · {model.aggregation} of {model.num_frames} frames · decision threshold{" "}
+          {model.decision_threshold.toFixed(2)}
+        </p>
       )}
     </main>
   );

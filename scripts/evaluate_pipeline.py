@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.config import settings  # noqa: E402
 from app.models.registry import get_predictor  # noqa: E402
-from app.services.evaluation import compute_metrics  # noqa: E402
+from app.services.evaluation import best_f1_threshold, compute_metrics  # noqa: E402
 from app.services.pipeline import run_pipeline  # noqa: E402
 
 VIDEO_EXT = set(settings.allowed_extensions)
@@ -44,6 +44,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", required=True, type=Path)
     ap.add_argument("--out", type=Path, default=None, help="write the report here as JSON")
+    ap.add_argument(
+        "--find-threshold", action="store_true",
+        help="also report the F1-maximizing threshold. Run this on VALIDATION videos, never on the test set",
+    )
     ap.add_argument("--limit", type=int, default=None, help="max videos per class (quick smoke test)")
     args = ap.parse_args()
 
@@ -52,7 +56,7 @@ def main() -> None:
     if args.limit:
         items = [it for label in (0, 1) for it in [i for i in items if i[1] == label][: args.limit]]
 
-    y_true, probs, failures = [], [], []
+    y_true, probs, names, failures = [], [], [], []
     t0 = time.perf_counter()
     for i, (path, label) in enumerate(items, 1):
         try:
@@ -62,6 +66,7 @@ def main() -> None:
             continue
         y_true.append(label)
         probs.append(res.prediction.forged_probability)
+        names.append(path.name)
         print(f"[{i}/{len(items)}] {path.name}: p_forged={probs[-1]:.3f} (label={label})")
 
     if not y_true:
@@ -74,9 +79,18 @@ def main() -> None:
             "aggregation": settings.aggregation, "decision_threshold": settings.decision_threshold,
         },
         "metrics": compute_metrics(y_true, probs, settings.decision_threshold),
+        "predictions": [
+            {"video": n, "label": int(y), "forged_probability": round(p, 4)}
+            for n, y, p in zip(names, y_true, probs, strict=True)
+        ],
         "failed_videos": failures,
         "seconds_per_video": round((time.perf_counter() - t0) / len(items), 3),
     }
+    if args.find_threshold:
+        report["suggested_threshold"] = {
+            **best_f1_threshold(y_true, probs),
+            "note": "chosen on this data; use validation videos, then apply to a separate test set",
+        }
     print(json.dumps(report, indent=2))
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
