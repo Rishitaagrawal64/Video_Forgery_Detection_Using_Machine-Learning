@@ -1,3 +1,10 @@
+import os
+
+# Must run before anything imports `app` (job_store is built at import time). Forces the in-memory
+# store so tests never try to reach the docker-compose Postgres host "db", even if a .env file or
+# shell variable sets FORGERY_DATABASE_URL.
+os.environ["FORGERY_DATABASE_URL"] = ""
+
 import cv2
 import numpy as np
 import pytest
