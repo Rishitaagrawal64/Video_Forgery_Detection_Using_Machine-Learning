@@ -1,5 +1,5 @@
 import type { Job } from "../types";
-
+// this my history page
 interface Props {
   jobs: Job[];
   onDelete: (id: string) => void;
