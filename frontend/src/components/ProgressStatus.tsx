@@ -1,5 +1,5 @@
 import type { JobStatus } from "../types";
-
+// this my progress page
 const TEXT: Record<JobStatus, string> = {
   uploaded: "Uploaded. Waiting to start…",
   processing: "Analysing frames…",
