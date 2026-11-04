@@ -2,7 +2,7 @@ interface Props {
   message: string;
   onRetry?: () => void;
 }
-
+// this my error page
 export default function ErrorMessage({ message, onRetry }: Props) {
   return (
     <div className="rounded-xl bg-red-100 p-4 text-red-700" role="alert">
