@@ -51,3 +51,16 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     predictor: str
+
+
+class ModelInfoResponse(BaseModel):
+    """The inference settings the server is currently using."""
+
+    predictor: str
+    num_frames: int
+    frame_size: int
+    normalize_mode: str
+    detect_faces: bool
+    aggregation: str
+    topk_fraction: float
+    decision_threshold: float
