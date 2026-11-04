@@ -23,7 +23,23 @@ export default function App() {
 
   useEffect(() => {
     // Optional extra: the app still works if the endpoint is unavailable.
-    getModelInfo().then(setModel).catch(() => setModel(null));
+    getModelInfo()
+      .then(setModel)
+      .catch(() => setModel(null));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    listJobs()
+      .then((jobs) => {
+        if (!cancelled) setHistory(jobs);
+      })
+      .catch(() => {
+        /* history is optional; ignore errors */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function refreshHistory() {
@@ -33,10 +49,6 @@ export default function App() {
       /* history is optional; ignore errors */
     }
   }
-
-  useEffect(() => {
-    refreshHistory();
-  }, []);
 
   async function handleFile(file: File) {
     setMsg("");
