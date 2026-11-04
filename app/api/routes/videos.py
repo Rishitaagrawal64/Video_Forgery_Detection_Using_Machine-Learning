@@ -34,7 +34,7 @@ def _to_job_response(job: dict) -> JobResponse:
     return JobResponse(**{k: job[k] for k in ("video_id", "filename", "status", "created_at", "result", "error")})
 
 
-def _process(video_id: str, num_frames: int, detect_faces: bool) -> None:
+def _process(video_id: str, num_frames: int | None, detect_faces: bool | None) -> None:
     job = job_store.get(video_id)
     if job is None:
         return

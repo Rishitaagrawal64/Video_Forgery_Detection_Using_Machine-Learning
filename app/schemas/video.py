@@ -40,8 +40,11 @@ class JobResponse(BaseModel):
 
 
 class AnalyzeRequest(BaseModel):
-    num_frames: int = Field(default=16, ge=1, le=128)
-    detect_faces: bool = False
+    """Per-request overrides. Omitted (null) fields fall back to the server settings
+    (FORGERY_NUM_FRAMES / FORGERY_DETECT_FACES), so a deployment can set them once in .env."""
+
+    num_frames: int | None = Field(default=None, ge=1, le=128)
+    detect_faces: bool | None = None
 
 
 class HealthResponse(BaseModel):
