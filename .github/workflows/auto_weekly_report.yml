@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-24.04 # pinned to avoid surprises from the ubuntu-latest -> Ubuntu 26 migration
     steps:
       - name: Checkout Repository with Full Git History
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
