@@ -8,6 +8,7 @@ from app.api.routes import health, model, videos
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.models.registry import get_predictor
+from app.services.cleanup import purge_stale_files
 
 setup_logging(settings.log_level)
 logger = logging.getLogger(__name__)
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    for directory in (settings.upload_dir, settings.frames_dir):
+        purge_stale_files(directory, settings.stale_file_ttl_hours)
     # Load the model once at startup: a bad FORGERY_MODEL_PATH fails fast instead of on the first request.
     predictor = get_predictor()
     logger.info("Predictor ready: %s (threshold=%s, aggregation=%s)", predictor.name,

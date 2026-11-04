@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     max_upload_mb: int = 50  # Functional Requirements, Constraint 2
     delete_after_processing: bool = True  # NFR-005: privacy
+    stale_file_ttl_hours: float = 24  # purge leftover uploads/frames older than this at startup; 0 disables
     allowed_extensions: tuple[str, ...] = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 
     # Frame extraction / preprocessing defaults
