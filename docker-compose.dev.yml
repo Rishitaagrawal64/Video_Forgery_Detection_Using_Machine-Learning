@@ -1,0 +1,8 @@
+# Developer extras. Use together with the main file:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+# Exposes PostgreSQL on localhost:5432 so you can run the API / tests / psql from your own machine:
+#   FORGERY_DATABASE_URL=postgresql+psycopg://forgery:<password>@localhost:5432/forgery
+services:
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"
