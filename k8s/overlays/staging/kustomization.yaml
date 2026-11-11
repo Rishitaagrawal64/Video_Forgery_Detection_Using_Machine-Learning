@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: forgery-staging
+resources:
+  - namespace.yaml
+  - ../../base
+images:                          # CHANGE_ME_OWNER/CHANGE_ME_REPO = your GitHub owner and repository (lowercase)
+  - name: forgery-api
+    newName: ghcr.io/CHANGE_ME_OWNER/CHANGE_ME_REPO-api
+    newTag: main
+  - name: forgery-frontend
+    newName: ghcr.io/CHANGE_ME_OWNER/CHANGE_ME_REPO-frontend
+    newTag: main
+configMapGenerator:
+  - name: api-config
+    behavior: merge
+    literals:
+      - FORGERY_LOG_LEVEL=DEBUG

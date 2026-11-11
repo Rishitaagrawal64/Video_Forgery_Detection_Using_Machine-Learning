@@ -1,0 +1,22 @@
+# One entry point: the frontend serves the UI and forwards /api/ to the API (see frontend/nginx.conf).
+# Needs an NGINX ingress controller in the cluster. Add a "host:" and a "tls:" section for a real domain.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forgery
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "55m"     # 50 MB uploads (Constraint 2)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
