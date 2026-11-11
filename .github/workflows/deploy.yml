@@ -1,0 +1,66 @@
+name: Deploy checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  stack:
+    # Builds the real containers, starts the whole stack and checks UI -> API -> PostgreSQL works.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Kubernetes manifests
+        run: |
+          kubectl kustomize k8s/overlays/staging > /dev/null
+          kubectl kustomize k8s/overlays/production > /dev/null
+      - name: Start the stack
+        env:
+          POSTGRES_PASSWORD: ci_password_123
+        run: docker compose up -d --build --wait --wait-timeout 600
+      - name: Smoke test
+        run: python3 scripts/smoke_test.py
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v
+
+  publish:
+    # On every push to main: publish both images to GitHub Container Registry (tags: "main" and the commit SHA).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: stack
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - {name: api, context: .}
+          - {name: frontend, context: ./frontend}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-${{ matrix.name }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
