@@ -1,5 +1,7 @@
-# Starts the API + PostgreSQL:   docker compose up --build
+# Starts PostgreSQL + API + web UI:   docker compose up --build
+#   UI:  http://localhost:3000        API docs: http://localhost:8000/docs
 # Database password comes from a .env file next to this file:  POSTGRES_PASSWORD=choose_a_password
+# (use letters/digits only - it is placed inside a connection URL)
 services:
   db:
     image: postgres:16-alpine
@@ -9,7 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: forgery
     volumes:
-      - pgdata:/var/lib/postgresql/data   
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U forgery -d forgery"]
       interval: 5s
@@ -27,8 +29,26 @@ services:
       FORGERY_PREDICTOR: ${FORGERY_PREDICTOR:-heuristic}
       FORGERY_MAX_UPLOAD_MB: "50"
       FORGERY_DECISION_THRESHOLD: ${FORGERY_DECISION_THRESHOLD:-0.5}
+    # To use the trained model, uncomment, then set FORGERY_PREDICTOR=torch and
+    # FORGERY_MODEL_PATH=/srv/models/forgery_resnet18.pt (plus the other values from the README) in .env
+    # volumes:
+    #   - ./ml/out:/srv/models:ro
     ports:
       - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "3000:8080"
 
 volumes:
   pgdata:
