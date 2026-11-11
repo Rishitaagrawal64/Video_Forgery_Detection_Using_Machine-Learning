@@ -21,7 +21,7 @@ COPY scripts ./scripts
 
 # Prepare runtime storage folders and non-root security context
 RUN mkdir -p data/uploads data/frames && \
-    useradd -m appuser && \
+    useradd -m -u 1000 appuser && \
     chown -R appuser /srv
 
 USER appuser
