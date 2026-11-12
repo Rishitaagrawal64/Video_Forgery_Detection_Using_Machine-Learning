@@ -12,6 +12,8 @@ jobs:
   stack:
     # Builds the real containers, starts the whole stack and checks UI -> API -> PostgreSQL works.
     runs-on: ubuntu-24.04
+    env:
+      POSTGRES_PASSWORD: ci_password_123   # compose needs it for every command (up, logs, down)
     steps:
       - uses: actions/checkout@v4
       - name: Validate Kubernetes manifests
@@ -19,8 +21,6 @@ jobs:
           kubectl kustomize k8s/overlays/staging > /dev/null
           kubectl kustomize k8s/overlays/production > /dev/null
       - name: Start the stack
-        env:
-          POSTGRES_PASSWORD: ci_password_123
         run: docker compose up -d --build --wait --wait-timeout 600
       - name: Smoke test
         run: python3 scripts/smoke_test.py
