@@ -76,7 +76,8 @@ def main() -> None:
     print(f"\n{'method':8} {'thr':>6} {'acc':>6} {'bal_acc':>8} {'f1':>6} {'auc':>6}   (test, n={len(y_test)})")
     for m, r in report.items():
         t = r["test"]
-        print(f"{m:8} {r['threshold_from_val']:>6} {t['accuracy']:>6} {t['balanced_accuracy']:>8} {t['f1']:>6} {t['auc']}")
+        thr = r["threshold_from_val"]
+        print(f"{m:8} {thr:>6} {t['accuracy']:>6} {t['balanced_accuracy']:>8} {t['f1']:>6} {t['auc']}")
 
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
