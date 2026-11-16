@@ -64,3 +64,5 @@ class ModelInfoResponse(BaseModel):
     aggregation: str
     topk_fraction: float
     decision_threshold: float
+    max_upload_mb: int
+    allowed_extensions: list[str]

@@ -15,4 +15,6 @@ def test_model_info_reflects_settings(monkeypatch):
     assert body["aggregation"] == "topk"
     assert body["detect_faces"] is True
     assert body["predictor"]
+    assert body["max_upload_mb"] == settings.max_upload_mb
+    assert body["allowed_extensions"] == list(settings.allowed_extensions)
     assert set(body) >= {"num_frames", "frame_size", "normalize_mode", "topk_fraction"}

@@ -19,4 +19,6 @@ def model_info() -> ModelInfoResponse:
         aggregation=settings.aggregation,
         topk_fraction=settings.topk_fraction,
         decision_threshold=settings.decision_threshold,
+        max_upload_mb=settings.max_upload_mb,
+        allowed_extensions=list(settings.allowed_extensions),
     )
