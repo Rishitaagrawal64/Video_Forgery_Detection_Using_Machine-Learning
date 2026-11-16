@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from app.core.config import settings
 from app.models.base import BasePredictor
@@ -48,16 +49,23 @@ class TorchPredictor(BasePredictor):
             return torch.sigmoid(self.model(x).reshape(len(batch))).cpu().numpy()
 
 
-def _build_torch() -> BasePredictor:
+def _require_model_path(kind: str) -> str:
     if not settings.model_path:
-        raise RuntimeError("Set FORGERY_MODEL_PATH to use the torch predictor")
-    return TorchPredictor(settings.model_path)
+        raise RuntimeError(f"Set FORGERY_MODEL_PATH to use the {kind} predictor")
+    if not Path(settings.model_path).exists():
+        raise FileNotFoundError(
+            f"Model file not found: {settings.model_path!r} (FORGERY_MODEL_PATH). "
+            "Check the path, or train one with ml/train_baseline.py."
+        )
+    return settings.model_path
+
+
+def _build_torch() -> BasePredictor:
+    return TorchPredictor(_require_model_path("torch"))
 
 
 def _build_keras() -> BasePredictor:
-    if not settings.model_path:
-        raise RuntimeError("Set FORGERY_MODEL_PATH to use the keras predictor")
-    return KerasPredictor(settings.model_path)
+    return KerasPredictor(_require_model_path("keras"))
 
 
 _FACTORIES = {
