@@ -1,8 +1,10 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.core.logging import resolve_level
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -15,15 +17,16 @@ class Settings(BaseSettings):
     upload_dir: Path = BASE_DIR / "data" / "uploads"
     frames_dir: Path = BASE_DIR / "data" / "frames"
 
-    max_upload_mb: int = 50  # Functional Requirements, Constraint 2
+    max_upload_mb: int = Field(default=50, gt=0)  # Functional Requirements, Constraint 2
     delete_after_processing: bool = True  # NFR-005: privacy
-    stale_file_ttl_hours: float = 24  # purge leftover uploads/frames older than this at startup; 0 disables
+    # purge leftover uploads/frames older than this many hours at startup; 0 disables
+    stale_file_ttl_hours: float = Field(default=24, ge=0)
     allowed_extensions: tuple[str, ...] = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 
     # Frame extraction / preprocessing defaults
-    num_frames: int = 16
-    frame_size: int = 224
-    normalize_mode: str = "unit"  # "unit" -> [0,1], "imagenet", "tanh" -> [-1,1]
+    num_frames: int = Field(default=16, ge=1, le=128)
+    frame_size: int = Field(default=224, ge=16, le=1024)
+    normalize_mode: Literal["unit", "imagenet", "tanh"] = "unit"  # unit -> [0,1], tanh -> [-1,1]
     save_frames: bool = False
     detect_faces: bool = False
 
@@ -43,6 +46,12 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     model_config = SettingsConfigDict(env_prefix="FORGERY_", env_file=".env", extra="ignore")
+
+    @field_validator("log_level")
+    @classmethod
+    def _check_log_level(cls, value: str) -> str:
+        resolve_level(value)  # raises a clear ValueError for unknown names
+        return value.strip().upper()
 
 
 settings = Settings()
