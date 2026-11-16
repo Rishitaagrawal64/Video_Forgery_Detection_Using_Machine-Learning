@@ -53,6 +53,10 @@ python scripts/evaluate_pipeline.py --data /path/to/videos --out docs/result/pip
 Video-level test AUC 0.998 on 57 videos, from a single split of one dataset. Treat this as a baseline, not proof of
 generalization. Details and limitations: `docs/model_card.md`.
 
+## Configuration
+Every `FORGERY_*` setting, its default and whether it must match training is listed in `docs/configuration.md`.
+Contributing: see `CONTRIBUTING.md`.
+
 ## Layout
 - `app/` FastAPI backend (routes, services, model adapters), see `docs/architecture.md`
 - `ml/` training and dataset splitting, `scripts/` frame extraction and pipeline evaluation
