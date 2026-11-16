@@ -1,14 +1,24 @@
 import { useRef, useState } from "react";
 
-const ALLOWED = [".mp4", ".avi", ".mov", ".mkv", ".webm"];
-const MAX_MB = 50;
+const DEFAULT_ALLOWED = [".mp4", ".avi", ".mov", ".mkv", ".webm"];
+const DEFAULT_MAX_MB = 50;
 
 interface Props {
   onFile: (file: File) => void;
   disabled?: boolean;
+  /** Limits normally come from GET /api/v1/model so they always match the server; these are fallbacks. */
+  maxMb?: number;
+  allowedExtensions?: string[];
 }
 
-export default function UploadDropzone({ onFile, disabled }: Props) {
+export default function UploadDropzone({
+  onFile,
+  disabled,
+  maxMb = DEFAULT_MAX_MB,
+  allowedExtensions = DEFAULT_ALLOWED,
+}: Props) {
+  const ALLOWED = allowedExtensions;
+  const MAX_MB = maxMb;
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 

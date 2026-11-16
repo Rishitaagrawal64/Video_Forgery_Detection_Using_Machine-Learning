@@ -34,3 +34,11 @@ def test_model_backed_predictors_require_a_path(monkeypatch, name):
     monkeypatch.setattr(settings, "model_path", None)
     with pytest.raises(RuntimeError, match="FORGERY_MODEL_PATH"):
         registry.get_predictor()
+
+
+@pytest.mark.parametrize("name", ["torch", "keras"])
+def test_missing_model_file_is_reported_before_importing_the_framework(monkeypatch, tmp_path, name):
+    monkeypatch.setattr(settings, "predictor", name)
+    monkeypatch.setattr(settings, "model_path", str(tmp_path / "nope.pt"))
+    with pytest.raises(FileNotFoundError, match="FORGERY_MODEL_PATH"):
+        registry.get_predictor()

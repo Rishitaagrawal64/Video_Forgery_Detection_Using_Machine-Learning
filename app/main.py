@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import health, model, videos
 from app.core.config import settings
 from app.core.logging import setup_logging
+from app.core.middleware import add_request_context
 from app.models.registry import get_predictor
 from app.services.cleanup import purge_stale_files
 
@@ -37,6 +38,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+add_request_context(app)
 
 app.include_router(health.router)
 app.include_router(model.router)

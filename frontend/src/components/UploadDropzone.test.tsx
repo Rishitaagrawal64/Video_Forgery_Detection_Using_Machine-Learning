@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import UploadDropzone from "./UploadDropzone";
 
-function setup() {
+function setup(props: { maxMb?: number; allowedExtensions?: string[] } = {}) {
   const onFile = vi.fn();
-  const { container } = render(<UploadDropzone onFile={onFile} />);
+  const { container } = render(<UploadDropzone onFile={onFile} {...props} />);
   const input = container.querySelector('input[type="file"]') as HTMLInputElement;
   return { onFile, input };
 }
@@ -35,5 +35,21 @@ describe("UploadDropzone", () => {
     pick(input, big);
     expect(onFile).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("50 MB");
+  });
+
+  it("uses the server's size limit when provided", () => {
+    const { onFile, input } = setup({ maxMb: 10 });
+    const clip = new File(["x"], "clip.mp4", { type: "video/mp4" });
+    Object.defineProperty(clip, "size", { value: 11 * 1024 * 1024 });
+    pick(input, clip);
+    expect(onFile).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("10 MB");
+  });
+
+  it("uses the server's allowed extensions when provided", () => {
+    const { onFile, input } = setup({ allowedExtensions: [".mp4"] });
+    pick(input, new File(["x"], "clip.mov", { type: "video/quicktime" }));
+    expect(onFile).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Unsupported type");
   });
 });

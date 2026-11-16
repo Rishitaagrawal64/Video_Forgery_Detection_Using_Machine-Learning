@@ -49,3 +49,22 @@ def test_startup_purges_stale_uploads(monkeypatch):
     with TestClient(app):
         pass
     assert not stale.exists()
+
+
+def test_one_undeletable_entry_does_not_stop_the_purge(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    stuck, ok = tmp_path / "stuck.mp4", tmp_path / "ok.mp4"
+    for f in (stuck, ok):
+        f.write_bytes(b"x")
+        _age(f, 100)
+    real_unlink = Path.unlink
+
+    def flaky_unlink(self, *args, **kwargs):
+        if self.name == "stuck.mp4":
+            raise PermissionError("in use")
+        return real_unlink(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", flaky_unlink)
+    assert purge_stale_files(tmp_path, 24) == 1
+    assert stuck.exists() and not ok.exists()

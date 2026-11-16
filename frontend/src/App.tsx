@@ -88,11 +88,16 @@ export default function App() {
     <main className="mx-auto max-w-xl p-4 sm:p-8">
       <h1 className="text-2xl font-bold">Video Forgery Detector</h1>
       <p className="mt-1 text-sm text-gray-600">
-        Upload a video (up to 50 MB) to check whether it is AI-generated.
+        Upload a video (up to {model?.max_upload_mb ?? 50} MB) to check whether it is AI-generated.
       </p>
 
       <div className="mt-6">
-        <UploadDropzone onFile={handleFile} disabled={busy} />
+        <UploadDropzone
+          onFile={handleFile}
+          disabled={busy}
+          maxMb={model?.max_upload_mb}
+          allowedExtensions={model?.allowed_extensions}
+        />
       </div>
 
       {busy && !job && (

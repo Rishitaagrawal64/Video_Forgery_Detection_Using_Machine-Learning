@@ -38,4 +38,6 @@ export interface ModelInfo {
   aggregation: string;
   topk_fraction: number;
   decision_threshold: number;
+  max_upload_mb: number;
+  allowed_extensions: string[];
 }
